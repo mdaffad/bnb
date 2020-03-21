@@ -1,9 +1,10 @@
 f = open("test.txt", "r")
-inputString = []
-
-i = 0
-for x in f:
-  inputString.insert(i,x.strip())
-  i = i + 1
-for x in inputString:
-  print(x)
+inputMatrix = [[],[],[],[]]
+for i in range(4):
+	temp = f.readline().strip().split()
+	for j in range(4):
+		if temp[j] != 'x':
+			inputMatrix[i].append(int(temp[j]))
+		else:
+			inputMatrix[i].append(0)
+print(inputMatrix)
