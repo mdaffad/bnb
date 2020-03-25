@@ -10,7 +10,6 @@ def  swap(a,b):
 def getCost(elem):
 	return elem.cost
 class Matrix:
-	correct = False
 	def __init__(self, contain, score = 0, last = ""):
 		self.container = [[0 for y in range(4)] for x in range (4)]
 		for i in range (4):
@@ -28,102 +27,102 @@ class Matrix:
 		return a
 	def correctness(self):
 		global correct
-		c = 1
+		c = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]
+		print("correctness")
+		print(self.container)
+		print("correctness END")
+		point = 0
 		for i in range(4):
 			for j in range(4):
-				if (self.container[i][j] != c):
-					return False
-				c = c + 1
-		correct = True
+				if (self.container[i][j] == c[i][j]):
+					point = point + 1
+		if point == 16:
+			correct = True
+		# print("YOLO")
 	# control movement consider the lastMovement
 	def canMove(self, movement):
 		blank = self.findBlank()
 		blankX, blankY = blank[0], blank[1]
 		result = False
-		if (movement == UP and self.lastMovement != UP and blankX != 0):
+		if (movement == UP and self.lastMovement != DOWN and blankX != 0):
 			result = True
-		elif (movement == DOWN and self.lastMovement != DOWN and blankX != 3):
+		elif (movement == DOWN and self.lastMovement != UP and blankX != 3):
 			result = True
-		elif (movement == RIGHT and self.lastMovement != RIGHT and blankY != 3):
+		elif (movement == RIGHT and self.lastMovement != LEFT and blankY != 3):
 			result = True
-		elif (movement == LEFT and self.lastMovement != LEFT and blankX != 0):
+		elif (movement == LEFT and self.lastMovement != RIGHT and blankY != 0):
 			result = True
 		return result
 	def move(self,movement): 
 		blank = self.findBlank()
 		blankX, blankY = blank[0], blank[1]
-		a = False
-		if movement == UP and blankX != 0 and self.lastMovement != UP:
-			self.container[blankX][blankY], self.container[blankX - 1][blankY] = self.container[blankX - 1][blankY], self.container[blankX][blankY]
-			self.lastMovement = UP
-			a = True
-		elif movement == DOWN and blankX != 3 and self.lastMovement != DOWN:
-			self.container[blankX][blankY], self.container[blankX + 1][blankY] = self.container[blankX + 1][blankY], self.container[blankX][blankY]
-			self.lastMovement = DOWN
-			a = True
-		elif movement == LEFT and blankY != 0 and self.lastMovement != LEFT:
-			self.container[blankX][blankY], self.container[blankX][blankY - 1] = self.container[blankX][blankY - 1], self.container[blankX][blankY]
-			self.lastMovement = LEFT
-			a = True
-		elif movement == RIGHT and blankY != 3 and self.lastMovement != RIGHT:
-			self.container[blankX][blankY], self.container[blankX][blankY + 1] = self.container[blankX][blankY + 1], self.container[blankX][blankY]
-			self.lastMovement = RIGHT
-			a = True
+		if self.canMove(movement):
+			if movement == UP:
+				self.container[blankX][blankY], self.container[blankX - 1][blankY] = self.container[blankX - 1][blankY], self.container[blankX][blankY]
+				self.lastMovement = UP
 
-		# count cost LESS(X)
+			elif movement == DOWN:
+				self.container[blankX][blankY], self.container[blankX + 1][blankY] = self.container[blankX + 1][blankY], self.container[blankX][blankY]
+				self.lastMovement = DOWN
+
+			elif movement == LEFT:
+				self.container[blankX][blankY], self.container[blankX][blankY - 1] = self.container[blankX][blankY - 1], self.container[blankX][blankY]
+				self.lastMovement = LEFT
+
+			elif movement == RIGHT:
+				self.container[blankX][blankY], self.container[blankX][blankY + 1] = self.container[blankX][blankY + 1], self.container[blankX][blankY]
+				self.lastMovement = RIGHT
 		#self cost to movement
 		self.cost = self.cost + 1 + self.less()
 		self.correctness()
-		# print("test")
-		return a
+		# print("CHECK")
+
 	
 	# Count cost function less
 	def less(self):
 		result = 0
 		for i in range(4):
 			for j in range(4):
-				if self.container[i][j] != 16:
+				if self.container != 16:
 					for k in range(i,4):
-						for l in range(j,4):
-							if self.container[i][j] > self.container[k][l] and self.container[k][l] != 16:
-								result = result + 1
-		# print(result)
+						if k == i:
+							for l in range(j,4):
+								if self.container[i][j] > self.container[k][l]:
+									result = result + 1
+						else:
+							for l in range(4):
+								if self.container[i][j] > self.container[k][l]:
+									result = result + 1
+
 		return result
 
 	# Inherit all possible movement
 	def inherit(self):
 		resultNodeQueue = []
-		
+		resultNodeQueue.clear()
 		
 		movementList = [UP,LEFT,DOWN,RIGHT]
 		for i in range(4):
-			if self.move(movementList[i]):
-				# print(tempNode.container)
-				# tempNode = Matrix(self.container,self.cost,self.lastMovement)
-				
-				print(movementList[i])
-				# print(movementList[(i + 2) % 4])
+			if self.canMove(movementList[i]):
+
+				# print(movementList[i])
+
 				resultNodeQueue.append(Matrix(self.container,self.cost,self.lastMovement))
 				resultNodeQueue[len(resultNodeQueue) - 1].move(movementList[i])
 
 				
-				print("start1")
-				for x in resultNodeQueue:
-					print(x.container)
-				print("end1")
-				# print(tempNode.container)
-				self.move(movementList[(i + 2) % 4])
-				time.sleep(1)
-				
-			print((i+2) % 4)
-			print("WRONG")
-			print(self.container)
-			
-		# print(resultNodeQueue[0].container)
-		# print("start2")
-		# for x in resultNodeQueue:
-		# 	print(x.container)
-		# print("end2")
+				# print("start1")
+				# for x in resultNodeQueue:
+				# 	print(x.container)
+				# print("end1")
+
+				# time.sleep(1)
+			# else:
+			# 	print()
+			# 	print("WRONG")
+			# 	print(movementList[i])
+			# 	print("WRONG END")
+			# 	print()
 		return resultNodeQueue
 
 class MatrixQueue:
@@ -139,10 +138,12 @@ class MatrixQueue:
 			self.add(self.element[0].inherit())	
 			self.element.pop(0)
 			self.element.sort(key = getCost)
+			print("produce")
 			for i in self.element:
 				print(i.container)
-			# print(self.element[0].container)
-			time.sleep(1)
+			print("produce end")
+
+			# time.sleep(1)
 
 
 f = open("test.txt", "r")
@@ -163,17 +164,11 @@ for i in range(4):
 		baseNode.container[i][j] = inputMatrix[i][j]
 		print(baseNode.container[i][j])
 		
-# for i in range(4):
-# 	for j in range(4):
-# 		# print(baseNode.container[i][j])
 matrixQueue = MatrixQueue(baseNode)
-# matrixQueue.element[0].move(RIGHT)
-# print(matrixQueue.element[0].container)
 while(len(matrixQueue.element) != 0 and not correct):
 	matrixQueue.produce()
 
-# baseNode.move(RIGHT)
-# print(baseNode.container)
-# baseNode.move(DOWN)
-# print(baseNode.container)
+for i in matrixQueue.element:
+	print(getCost(i))
+print(correct)
  
