@@ -15,7 +15,8 @@ class Matrix:
 		for i in range (4):
 			for j in range(4):
 				self.container[i][j] = int(contain[i][j])
-		self.cost = score
+		self.score = score
+		self.cost = 0
 		self.lastMovement = last
 	def findBlank(self):
 		a = [0,0]
@@ -28,9 +29,6 @@ class Matrix:
 	def correctness(self):
 		global correct
 		c = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]
-		print("correctness")
-		print(self.container)
-		print("correctness END")
 		point = 0
 		for i in range(4):
 			for j in range(4):
@@ -38,7 +36,7 @@ class Matrix:
 					point = point + 1
 		if point == 16:
 			correct = True
-		# print("YOLO")
+
 	# control movement consider the lastMovement
 	def canMove(self, movement):
 		blank = self.findBlank()
@@ -72,27 +70,32 @@ class Matrix:
 			elif movement == RIGHT:
 				self.container[blankX][blankY], self.container[blankX][blankY + 1] = self.container[blankX][blankY + 1], self.container[blankX][blankY]
 				self.lastMovement = RIGHT
-		#self cost to movement
-		self.cost = self.cost + 1 + self.less()
+		# self cost after movement
+		self.score = self.score + 1
+		self.cost = self.score + self.less()
 		self.correctness()
-		# print("CHECK")
 
 	
 	# Count cost function less
-	def less(self):
+	def less(self, printStat = False):
 		result = 0
 		for i in range(4):
 			for j in range(4):
+				result_item = 0
 				if self.container != 16:
 					for k in range(i,4):
 						if k == i:
 							for l in range(j,4):
 								if self.container[i][j] > self.container[k][l]:
 									result = result + 1
+									result_item = result_item + 1
 						else:
 							for l in range(4):
 								if self.container[i][j] > self.container[k][l]:
 									result = result + 1
+									result_item = result_item + 1
+				if printStat:
+					print("Nilai KURANG dari ",self.container[i][j], " : ",result_item)
 
 		return result
 
@@ -102,53 +105,51 @@ class Matrix:
 		resultNodeQueue.clear()
 		
 		movementList = [UP,LEFT,DOWN,RIGHT]
+		
 		for i in range(4):
 			if self.canMove(movementList[i]):
-
-				# print(movementList[i])
-
-				resultNodeQueue.append(Matrix(self.container,self.cost,self.lastMovement))
+				resultNodeQueue.append(Matrix(self.container,self.score,self.lastMovement))
 				resultNodeQueue[len(resultNodeQueue) - 1].move(movementList[i])
 
-				
-				# print("start1")
-				# for x in resultNodeQueue:
-				# 	print(x.container)
-				# print("end1")
-
-				# time.sleep(1)
-			# else:
-			# 	print()
-			# 	print("WRONG")
-			# 	print(movementList[i])
-			# 	print("WRONG END")
-			# 	print()
 		return resultNodeQueue
 
 class MatrixQueue:
 	# As static atribbute
 	nodeExpand = 0
+
 	def __init__(self,base):
 		self.element = [base]
+
 	def add(self, newElement):
 		self.element = self.element + newElement
 		MatrixQueue.nodeExpand = MatrixQueue.nodeExpand + len(newElement)
+
 	def produce(self):
 		if len(self.element) != 0:
-			self.add(self.element[0].inherit())	
+			newElement = self.element[0].inherit()
+			if len(newElement) != 0:
+				self.add(newElement)	
 			self.element.pop(0)
 			self.element.sort(key = getCost)
-			print("produce")
-			for i in self.element:
-				print(i.container)
-			print("produce end")
-
+			print()
+			print("-----------QUEUE-----------")
+			for x in self.element:
+				print()
+				print("---------------------------")
+				for i in range(4):
+					for j in range(4):
+						print(x.container[i][j], end="\t")
+					print()
+				print("---------------------------")
+				print()
+			print("---------QUEUE END---------")
+			print()
+			
 			# time.sleep(1)
 
-
-f = open("test.txt", "r")
+start_time = time.time()
+f = open("test1.txt", "r")
 inputMatrix = [[0 for y in range(4)] for x in range (4)]
-
 
 for i in range(4):
 	temp = f.readline().strip().split()
@@ -159,16 +160,24 @@ for i in range(4):
 			inputMatrix[i][j] = 16
 		# print(str(inputMatrix[i][j]))
 baseNode = Matrix(inputMatrix)
+print("---------BASE NODE---------")
 for i in range(4):
 	for j in range(4):
 		baseNode.container[i][j] = inputMatrix[i][j]
-		print(baseNode.container[i][j])
+		print(baseNode.container[i][j], end="\t")
+	print()
+print("-------END BASE NODE-------")
+print()
 		
 matrixQueue = MatrixQueue(baseNode)
-while(len(matrixQueue.element) != 0 and not correct):
-	matrixQueue.produce()
-
-for i in matrixQueue.element:
-	print(getCost(i))
-print(correct)
+x,y = baseNode.findBlank()
+result = baseNode.less(True)
+print("Sum of Less Function + X : ",result + (x + y) % 2) 
+if (result + (x + y) % 2) %2 == 0:
+	while(len(matrixQueue.element) != 0 and not correct):
+		matrixQueue.produce()
+else:
+	print("Unsolved problem")
+print("Execution \t\t : %s seconds " % (time.time() - start_time))
+print("Expand Node \t\t :",MatrixQueue.nodeExpand)
  
